@@ -3,6 +3,7 @@
 #include <student/cpu.h>
 #include <student/globals.h>
 #include <student/bunny.h>
+#include "gpu.h"
 
 /// \addtogroup shader_side Úkoly v shaderech
 /// @{
@@ -36,7 +37,6 @@ void phong_VS(GPUVertexShaderData*const data){
   /// Vrchol v clip-space by měl být zapsán do proměnné gl_Position ve výstupní
   /// struktuře.
   (void)data;
-
 }
 
 /**
@@ -83,6 +83,10 @@ void phong_FS(GPUFragmentShaderData*const data){
  */
 struct PhongData{
 /// \todo Zde si vytvořte proměnné, které budete potřebovat (id bufferů, programu, ...)
+  ProgramID prg;///< program id
+  VertexPullerID vao; ///< vertex puller id
+  BufferID vbo; ///< vertex buffer id
+  uint32_t nofPoints; ///< number of vertices
 }phongData;///< this variable holds all data for phong method
 
 /**
@@ -120,7 +124,10 @@ void phong_onInit(void*a){
 ///  - cpu_attachShaders()
 ///  - cpu_setVS2FSType()
 
+
 }
+
+
 
 /**
  * @brief This function draws phong method.
