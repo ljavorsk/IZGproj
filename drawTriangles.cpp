@@ -15,7 +15,7 @@ typedef struct {
 
 bool isPointInsideViewFrustum(Vec4 const*const p);
 
-void triangle_viewportTransform(GPU *const gpu, Triangle_t *triangle) {
+void triangleViewportTransform(GPU *const gpu, Triangle_t *triangle) {
     for (int i = 0; i < 3; ++i) {
         Vec4 *vertexPos = &triangle->vertices[i].gl_Position;
         vertexPos->data[0] = (vertexPos->data[0] * 0.5f + 0.5f) * gpu->framebuffer.width; // x coord
@@ -53,14 +53,13 @@ void lobotomized_vertexPullerTriangle(GPUInVertex*const inVertex,GPUVertexPuller
   }
 }
 
+/* Skopírované z cvičenia na rasterizáciu trojuholníkov (Pinedov algoritmus)
+ * Upravené špecificky pre tento projekt 
+ */
 void triangleRasterization(GPUFragmentShaderData*const fragment, GPU*const gpu, GPUProgram const* prg, Triangle_t triangle) {
   Vec4 v1 = triangle.vertices[0].gl_Position;
   Vec4 v2 = triangle.vertices[1].gl_Position;
   Vec4 v3 = triangle.vertices[2].gl_Position;
-
- fprintf(stderr, "%d %d\n", triangle.vertices[0].gl_Position.data[0], triangle.vertices[0].gl_Position.data[1]);
- fprintf(stderr, "%d %d\n", triangle.vertices[1].gl_Position.data[0], triangle.vertices[0].gl_Position.data[1]);
- fprintf(stderr, "%d %d\n", triangle.vertices[2].gl_Position.data[0], triangle.vertices[0].gl_Position.data[1]);
 
 	int min_x = MIN(MIN(v1.data[0], v2.data[0]), v3.data[0]);
 	int min_y = MIN(MIN(v1.data[1], v2.data[1]), v3.data[1]);
@@ -85,7 +84,6 @@ void triangleRasterization(GPUFragmentShaderData*const fragment, GPU*const gpu, 
 	int edge_f2 = (min_y - v2.data[1] + 0.5)* delta_x2 - (min_x - v2.data[0] + 0.5)* delta_y2;
 	int edge_f3 = (min_y - v3.data[1] + 0.5)* delta_x3 - (min_x - v3.data[0] + 0.5)* delta_y3;
 
-      fprintf(stderr, "min_x: %d, max_x: %d, min_y: %d, max_y: %d\n", min_x, max_x, min_y, max_y);
 	for (int y = min_y; y <= max_y; y++) {
 
 		bool even = (y - min_y) % 2 == 0;
@@ -144,20 +142,13 @@ void gpu_drawTriangles(GPU*const gpu,uint32_t nofVertices){
 
     prg->vertexShader(&vd);
 
-    //Vec4 pos;
-    //copy_Vec4(&pos,&vd.outVertex.gl_Position);
-    //if(!isPointInsideViewFrustum(&pos))continue;
-
     triangle.vertices[count] = vd.outVertex;
     count++;
 
     if (count == 3) {
-      //Vec4 ndc;
       trianglePerspectiveDivision(&triangle);
-      triangle_viewportTransform(gpu, &triangle);
-
+      triangleViewportTransform(gpu, &triangle);
       triangleRasterization(&fd, gpu, prg, triangle);
-
       count = 0;
     }
   }
